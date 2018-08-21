@@ -17,6 +17,14 @@ public class Coordinates {
         return j;
     }
 
+    public void setI(int i) {
+        this.i = i;
+    }
+
+    public void setJ(int j) {
+        this.j = j;
+    }
+
     @Override
     public String toString() {
         return "Coordinates{" +

@@ -6,6 +6,7 @@ import com.grig.utills.Swapper;
 import java.util.Random;
 
 public class PuzzleModel {
+    private Coordinates coordinatesNull;
     private int n;
     private int[][] massive;
 
@@ -21,6 +22,7 @@ public class PuzzleModel {
             for (int j = 0; j < n; j++) {
                 if (i == n - 1 && j == n - 1) {
                     massive[i][j] = 0;
+                    coordinatesNull = new Coordinates(i, j);
                     break;
                 }
                 massive[i][j] = ++count;
@@ -52,11 +54,28 @@ public class PuzzleModel {
         }
     }
 
+    public boolean isGameOver() {
+        int oldValue = 0;
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                if (i == n-1 && j == n-1) break;
+
+                if (massive[i][j] - oldValue != 1) return false;
+                oldValue = massive[i][j];
+            }
+        }
+        return true;
+    }
+
     public int getN() {
         return n;
     }
 
     public int[][] getMassive() {
         return massive;
+    }
+
+    public Coordinates getCoordinatesNull() {
+        return coordinatesNull;
     }
 }

@@ -8,8 +8,8 @@ public class Swapper {
     }
 
     public void swap(Coordinates coordinatesFirst, Coordinates coordinatesSecond) {
-        int temp = massive[coordinatesFirst.getI()][coordinatesFirst.getJ()];
-        massive[coordinatesFirst.getI()][coordinatesFirst.getJ()] = massive[coordinatesSecond.getI()][coordinatesSecond.getJ()];
-        massive[coordinatesSecond.getI()][coordinatesSecond.getJ()] = temp;
+        int temp = massive[coordinatesFirst.getJ()][coordinatesFirst.getI()];
+        massive[coordinatesFirst.getJ()][coordinatesFirst.getI()] = massive[coordinatesSecond.getJ()][coordinatesSecond.getI()];
+        massive[coordinatesSecond.getJ()][coordinatesSecond.getI()] = temp;
     }
 }

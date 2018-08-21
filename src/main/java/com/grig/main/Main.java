@@ -2,45 +2,32 @@ package com.grig.main;
 
 import com.grig.controller.PuzzleController;
 import com.grig.model.PuzzleModel;
+import com.grig.view.PuzzleView;
 import javafx.application.Application;
+
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
 
 public class Main extends Application {
-    int width = 60;
-    int height = 60;
 
     public void start(Stage primaryStage) throws Exception {
 
-        PuzzleModel puzzleModel = new PuzzleModel(5);
-        puzzleModel.shuffle(3);
-        puzzleModel.print();
+        PuzzleModel puzzleModel = new PuzzleModel(4);
+        PuzzleView puzzleView = new PuzzleView(puzzleModel, primaryStage);
+        //puzzleModel.shuffle(10);
+        PuzzleController puzzleController = new PuzzleController(puzzleModel, puzzleView);
 
-        PuzzleController puzzleController = new PuzzleController();
-        GridPane gridPane = new GridPane();
-        int[][] massive = puzzleModel.getMassive();
-        int n = puzzleModel.getN();
+        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/mainWindow.fxml"));
+        fxmlLoader.setController(puzzleController);
 
-        for (int i = 0; i < n; i++) {
-            for (int j = 0; j < n; j++) {
-                if (i == n-1 && j == n-1) {
-                    break;
-                }
-
-                Button newButton = new Button();
-                newButton.setText(String.valueOf(massive[i][j]));
-                newButton.setMaxSize(width, height);
-                newButton.setMinSize(width, height);
-                gridPane.add(newButton, j, i);
-            }
-        }
-        Scene scene = new Scene(gridPane, width*n, height*n);
-
+        Scene scene = new Scene((Parent)fxmlLoader.load(), 400, 400);
         primaryStage.setScene(scene);
         primaryStage.setTitle("15-puzzle");
-        primaryStage.setResizable(false);
+        primaryStage.setResizable(true);
+
+        puzzleController.updateScene();
 
         primaryStage.show();
     }
