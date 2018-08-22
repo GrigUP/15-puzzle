@@ -26,4 +26,8 @@ public class PuzzleView {
             button.setText(massive[index/model.getN()][index%model.getN()] + "");
         }
     }
+
+    public Stage getStage() {
+        return stage;
+    }
 }

@@ -16,18 +16,21 @@ public class Main extends Application {
 
         PuzzleModel puzzleModel = new PuzzleModel(4);
         PuzzleView puzzleView = new PuzzleView(puzzleModel, primaryStage);
-        //puzzleModel.shuffle(10);
+        puzzleModel.shuffle(10);
         PuzzleController puzzleController = new PuzzleController(puzzleModel, puzzleView);
 
         FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/mainWindow.fxml"));
         fxmlLoader.setController(puzzleController);
 
         Scene scene = new Scene((Parent)fxmlLoader.load(), 400, 400);
+        scene.getStylesheets().addAll("/buttonStyle.css");
+
         primaryStage.setScene(scene);
         primaryStage.setTitle("15-puzzle");
         primaryStage.setResizable(true);
 
         puzzleController.updateScene();
+        puzzleController.initializeEvent();
 
         primaryStage.show();
     }

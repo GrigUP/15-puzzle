@@ -4,9 +4,15 @@ import com.grig.model.PuzzleModel;
 import com.grig.utills.Coordinates;
 import com.grig.utills.Swapper;
 import com.grig.view.PuzzleView;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
+import javafx.fxml.FXML;
+import javafx.scene.Node;
+import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.GridPane;
 
 public class PuzzleController {
@@ -14,9 +20,64 @@ public class PuzzleController {
     private PuzzleModel model;
     private PuzzleView puzzleView;
 
+    @FXML
+    GridPane gridPane;
+
     public PuzzleController(PuzzleModel model, PuzzleView puzzleView) {
         this.model = model;
         this.puzzleView = puzzleView;
+    }
+
+    public void initializeEvent() {
+        Scene scene = puzzleView.getStage().getScene();
+        scene.setOnKeyPressed(new EventHandler<KeyEvent>() {
+            @Override
+            public void handle(KeyEvent event) {
+                if (!isGameOver) {
+                    Coordinates coordinatesNull = model.getCoordinatesNull();
+                    Coordinates coordinatesMovedButton = null;
+                    switch (event.getCode()) {
+                        case RIGHT:
+                            if (coordinatesNull.getI() - 1 >= 0) {
+                                coordinatesMovedButton = new Coordinates(coordinatesNull.getI() - 1, coordinatesNull.getJ());
+                            }
+                            break;
+                        case LEFT:
+                            if (coordinatesNull.getI() + 1 < model.getN()) {
+                                coordinatesMovedButton = new Coordinates(coordinatesNull.getI() + 1, coordinatesNull.getJ());
+                            }
+                            break;
+                        case DOWN:
+                            if (coordinatesNull.getJ() - 1 >= 0) {
+                                coordinatesMovedButton = new Coordinates(coordinatesNull.getI(), coordinatesNull.getJ() - 1);
+                            }
+                            break;
+                        case UP:
+                            if (coordinatesNull.getJ() + 1 < model.getN()) {
+                                coordinatesMovedButton = new Coordinates(coordinatesNull.getI(), coordinatesNull.getJ() + 1);
+                            }
+                            break;
+                    }
+
+                    if (coordinatesMovedButton == null) return;
+
+                    Node movedNode = getNodeFromGridPaneByIndex(gridPane, coordinatesMovedButton);
+                    Swapper swpr = new Swapper(model.getMassive());
+                    swpr.swap(coordinatesMovedButton, coordinatesNull);
+
+                    Coordinates tempCoordinates = coordinatesMovedButton;
+
+                    GridPane.setColumnIndex(movedNode, coordinatesNull.getI());
+                    GridPane.setRowIndex(movedNode, coordinatesNull.getJ());
+
+                    coordinatesNull.setI(tempCoordinates.getI());
+                    coordinatesNull.setJ(tempCoordinates.getJ());
+                    isGameOver = model.isGameOver();
+                }
+                if (isGameOver) gameOverDialog();
+            }
+        });
+
     }
 
     public void updateScene() {
@@ -40,21 +101,11 @@ public class PuzzleController {
 
                 coordinatesNull.setI(tempCoordinates.getI());
                 coordinatesNull.setJ(tempCoordinates.getJ());
+                isGameOver = model.isGameOver();
             }
-            isGameOver = model.isGameOver();
-        }
-        if (isGameOver) {
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
 
-            alert.setTitle("Конец игры");
-            alert.setHeaderText(null);
-            alert.setContentText("Вы победили!");
-
-            alert.showAndWait();
-            model.shuffle(10);
-            updateScene();
-            isGameOver = false;
         }
+        if (isGameOver) gameOverDialog();
     }
 
     private boolean isNeighborCoordinates(Coordinates coordinates1, Coordinates coordinates2) {
@@ -66,5 +117,25 @@ public class PuzzleController {
 
         return ((Math.abs(coordinateI1-coordinateI2) == 1 && (coordinateJ1-coordinateJ2 == 0))
                 ^ (Math.abs(coordinates1.getJ()-coordinates2.getJ()) == 1 && (coordinateI1-coordinateI2 == 0)));
+    }
+
+    private Node getNodeFromGridPaneByIndex(GridPane gridPane, Coordinates coordinates) {
+        for (Node node:gridPane.getChildren()) {
+            if (GridPane.getRowIndex(node) == coordinates.getJ() && GridPane.getColumnIndex(node) == coordinates.getI()) return node;
+        }
+        return null;
+    }
+
+    private void gameOverDialog() {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+
+        alert.setTitle("GameOver");
+        alert.setHeaderText(null);
+        alert.setContentText("You win!");
+
+        alert.showAndWait();
+        model.shuffle(10);
+        updateScene();
+        isGameOver = false;
     }
 }
