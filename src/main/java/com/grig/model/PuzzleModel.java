@@ -14,6 +14,7 @@ public class PuzzleModel {
         this.n = n;
         massive = new int[n][n];
         fill();
+        shuffle(10);
     }
 
     private void fill() {

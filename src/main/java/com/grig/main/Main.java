@@ -8,7 +8,9 @@ import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.image.Image;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 
 public class Main extends Application {
 
@@ -16,18 +18,18 @@ public class Main extends Application {
 
         PuzzleModel puzzleModel = new PuzzleModel(4);
         PuzzleView puzzleView = new PuzzleView(puzzleModel, primaryStage);
-        puzzleModel.shuffle(10);
         PuzzleController puzzleController = new PuzzleController(puzzleModel, puzzleView);
 
         FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/mainWindow.fxml"));
         fxmlLoader.setController(puzzleController);
 
         Scene scene = new Scene((Parent)fxmlLoader.load(), 400, 400);
-        scene.getStylesheets().addAll("/buttonStyle.css");
+//        scene.getStylesheets().addAll("/buttonStyle.css", "gridPaneStyle.css");
 
         primaryStage.setScene(scene);
-        primaryStage.setTitle("15-puzzle");
-        primaryStage.setResizable(true);
+        primaryStage.getIcons().add(new Image(getClass().getResourceAsStream("/icon.png")));
+
+        primaryStage.initStyle(StageStyle.UNDECORATED);
 
         puzzleController.updateScene();
         puzzleController.initializeEvent();

@@ -57,6 +57,9 @@ public class PuzzleController {
                                 coordinatesMovedButton = new Coordinates(coordinatesNull.getI(), coordinatesNull.getJ() + 1);
                             }
                             break;
+                        case ESCAPE:
+                            puzzleView.getStage().close();
+                            return;
                     }
 
                     if (coordinatesMovedButton == null) return;
