@@ -5,6 +5,7 @@ import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 public class PuzzleView {
@@ -18,7 +19,9 @@ public class PuzzleView {
 
     public void update() {
         int[][] massive = model.getMassive();
-        GridPane gridPane = (GridPane) stage.getScene().getRoot();
+        VBox vBox = (VBox) stage.getScene().getRoot();
+        GridPane gridPane = (GridPane) ((AnchorPane)vBox.getChildren().get(1)).getChildren().get(0);
+
         int index = -1;
         for (Node node: gridPane.getChildren()) {
             index++;

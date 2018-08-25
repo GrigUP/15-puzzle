@@ -23,8 +23,7 @@ public class Main extends Application {
         FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/mainWindow.fxml"));
         fxmlLoader.setController(puzzleController);
 
-        Scene scene = new Scene((Parent)fxmlLoader.load(), 400, 400);
-//        scene.getStylesheets().addAll("/buttonStyle.css", "gridPaneStyle.css");
+        Scene scene = new Scene((Parent)fxmlLoader.load(), 410, 490);
 
         primaryStage.setScene(scene);
         primaryStage.getIcons().add(new Image(getClass().getResourceAsStream("/icon.png")));
@@ -32,7 +31,8 @@ public class Main extends Application {
         primaryStage.initStyle(StageStyle.UNDECORATED);
 
         puzzleController.updateScene();
-        puzzleController.initializeEvent();
+        puzzleController.initializeKeyboardEvent();
+        puzzleController.initializeMouseEvent();
 
         primaryStage.show();
     }

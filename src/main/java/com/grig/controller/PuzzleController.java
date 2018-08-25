@@ -4,6 +4,7 @@ import com.grig.model.PuzzleModel;
 import com.grig.utills.Coordinates;
 import com.grig.utills.Swapper;
 import com.grig.view.PuzzleView;
+import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -12,28 +13,70 @@ import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
+import javafx.stage.Stage;
+
+import java.math.BigDecimal;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class PuzzleController {
+    private double xOffSet = 0.0;
+    private double yOffSet = 0.0;
+
     private boolean isGameOver = false;
+    private boolean isStarted = false;
+    private BigDecimal timer = new BigDecimal("0.00");
     private PuzzleModel model;
     private PuzzleView puzzleView;
 
     @FXML
     GridPane gridPane;
 
+    @FXML
+    Button startOrStopButton;
+
+    @FXML
+    Label timerLabel;
+
     public PuzzleController(PuzzleModel model, PuzzleView puzzleView) {
         this.model = model;
         this.puzzleView = puzzleView;
     }
 
-    public void initializeEvent() {
+    public void initializeMouseEvent() {
+        Scene scene = puzzleView.getStage().getScene();
+        Stage stage = puzzleView.getStage();
+
+        scene.setOnMousePressed(new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent event) {
+                xOffSet = scene.getX() - event.getSceneX();
+                yOffSet = scene.getY() - event.getSceneY();
+            }
+        });
+
+        scene.setOnMouseDragged(new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent event) {
+                stage.setX(event.getScreenX() + xOffSet);
+                stage.setY(event.getScreenY() + yOffSet);
+            }
+        });
+    }
+
+    public void initializeKeyboardEvent() {
         Scene scene = puzzleView.getStage().getScene();
         scene.setOnKeyPressed(new EventHandler<KeyEvent>() {
             @Override
             public void handle(KeyEvent event) {
                 if (!isGameOver) {
+                    if (!isStarted) {
+                        startGame();
+                    }
                     Coordinates coordinatesNull = model.getCoordinatesNull();
                     Coordinates coordinatesMovedButton = null;
                     switch (event.getCode()) {
@@ -80,7 +123,6 @@ public class PuzzleController {
                 if (isGameOver) gameOverDialog();
             }
         });
-
     }
 
     public void updateScene() {
@@ -88,27 +130,36 @@ public class PuzzleController {
     }
 
     public void buttonAction(ActionEvent actionEvent) {
-        if (!isGameOver) {
-            Button actionButton = (Button) actionEvent.getSource();
+        if (!isStarted)
+        startGame();
+        if (isStarted) {
+            if (!isGameOver) {
+                Button actionButton = (Button) actionEvent.getSource();
 
-            Coordinates coordinatesPushedButton = new Coordinates(GridPane.getColumnIndex(actionButton.getParent()), GridPane.getRowIndex(actionButton.getParent()));
-            Coordinates coordinatesNull = model.getCoordinatesNull();
+                Coordinates coordinatesPushedButton = new Coordinates(GridPane.getColumnIndex(actionButton.getParent()), GridPane.getRowIndex(actionButton.getParent()));
+                Coordinates coordinatesNull = model.getCoordinatesNull();
 
-            if (isNeighborCoordinates(coordinatesPushedButton, coordinatesNull)) {
-                Swapper swpr = new Swapper(model.getMassive());
-                swpr.swap(coordinatesPushedButton, coordinatesNull);
+                if (isNeighborCoordinates(coordinatesPushedButton, coordinatesNull)) {
+                    Swapper swpr = new Swapper(model.getMassive());
+                    swpr.swap(coordinatesPushedButton, coordinatesNull);
 
-                Coordinates tempCoordinates = coordinatesPushedButton;
-                GridPane.setColumnIndex(actionButton.getParent(), coordinatesNull.getI());
-                GridPane.setRowIndex(actionButton.getParent(), coordinatesNull.getJ());
+                    Coordinates tempCoordinates = coordinatesPushedButton;
+                    GridPane.setColumnIndex(actionButton.getParent(), coordinatesNull.getI());
+                    GridPane.setRowIndex(actionButton.getParent(), coordinatesNull.getJ());
 
-                coordinatesNull.setI(tempCoordinates.getI());
-                coordinatesNull.setJ(tempCoordinates.getJ());
-                isGameOver = model.isGameOver();
+                    coordinatesNull.setI(tempCoordinates.getI());
+                    coordinatesNull.setJ(tempCoordinates.getJ());
+                    isGameOver = model.isGameOver();
+                }
             }
-
+            if (isGameOver) gameOverDialog();
         }
-        if (isGameOver) gameOverDialog();
+    }
+
+    public void startButtonAction(ActionEvent actionEvent) {
+        if (!isStarted) {
+            startGame();
+        } else stopGame();
     }
 
     private boolean isNeighborCoordinates(Coordinates coordinates1, Coordinates coordinates2) {
@@ -130,15 +181,59 @@ public class PuzzleController {
     }
 
     private void gameOverDialog() {
+        isStarted = false;
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
 
         alert.setTitle("GameOver");
         alert.setHeaderText(null);
-        alert.setContentText("You win!");
-
-        alert.showAndWait();
-        model.shuffle(10);
-        updateScene();
+        alert.setContentText("You win and your time: " + timer.toString() + "!");
+        startOrStopButton.setText("Start");
         isGameOver = false;
+        alert.showAndWait();
+        setTimer("0.00");
+
+    }
+
+    private void setTimer(String time) {
+        timerLabel.setText("Timer: " + new BigDecimal(time).toString() + " s");
+    }
+
+    private void startGame() {
+        isStarted = true;
+        startOrStopButton.setText("Stop");
+        model.shuffle(10);
+        puzzleView.update();
+        Thread thread = new Thread(new Runnable() {
+
+            @Override
+            public void run() {
+                while (isStarted) {
+                    if (!puzzleView.getStage().isShowing()) {
+                        isStarted = false;
+                    }
+
+                    try {
+                        Thread.sleep(10);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+
+                    timer = timer.add(new BigDecimal("0.01"));
+                    Platform.runLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            setTimer(timer.toString());
+                        }
+                    });
+                }
+            }
+        });
+
+        thread.start();
+    }
+
+    private void stopGame() {
+        isStarted = false;
+        startOrStopButton.setText("Start");
     }
 }
